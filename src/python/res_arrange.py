@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import eel
 
 idx = 0
 arr = []
@@ -157,6 +158,7 @@ def find_ref(fpath_abs):
         if not cur_idx in deref_set:
             deref_set.add(cur_idx)
 
+@eel.expose
 def print_ref(path):
     global rev
     global arr
@@ -203,7 +205,7 @@ def check_file_ref(fpath_abs):
         if not os.path.exists(ref_path_abs):
             print('%s not found, ref by %s' % (ref_path_abs, fpath_abs))
 
-
+@eel.expose
 def check_ref(path):
     if not os.path.exists(path):
         print('path not exists: %s' % path)
@@ -356,6 +358,7 @@ def do_mv_dir(p1, p2):
         
     print('completed')
 
+@eel.expose
 def do_mv(p1, p2):
     print('do mv')
     if os.path.isdir(p1):
