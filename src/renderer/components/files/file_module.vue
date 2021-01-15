@@ -74,7 +74,7 @@ export default {
 
 .bodyTip {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
 }
 
 </style>

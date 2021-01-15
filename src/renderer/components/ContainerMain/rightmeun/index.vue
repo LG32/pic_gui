@@ -88,7 +88,6 @@
     methods: {
       freshPort () {
         console.log('进入刷新串口函数')
-        let str = 'E:\\rawres\\res_worldmap\\data\\editor_data\\map\\PNG\\2215.png'
         // eel.check_ref(str)
         if (this.freshFlag) {
           console.log('刷新串口')
