@@ -69,7 +69,7 @@
 <script>
   import myTable from '../../Table/my-table'
   // eslint-disable-next-line no-unused-vars
-  let eel = require('../../../../python/res_arrange.py')
+  // let eel = require('../../../../python/res_arrange.py')
 
   // let SerialPort = require('serialport')
   export default {
@@ -89,7 +89,7 @@
       freshPort () {
         console.log('进入刷新串口函数')
         let str = 'E:\\rawres\\res_worldmap\\data\\editor_data\\map\\PNG\\2215.png'
-        eel.check_ref(str)
+        // eel.check_ref(str)
         if (this.freshFlag) {
           console.log('刷新串口')
           const that = this
