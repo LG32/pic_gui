@@ -5,23 +5,28 @@
         <el-header><h4>移动图片</h4></el-header>
         <el-main class="receive-box">
           <el-form ref="form" :model="form" label-width="120px" style="width: 60%">
-            <el-form-item label="原文件">
-              <input type="file" id="move_file" hidden @change="maskFile" webkitdirectory>
-              <el-input placeholder="移动的文件" v-model="moveFileList" class="input-with-select">
-                <el-button slot="append" icon="el-icon-folder" type="success" @click="btnChange"></el-button>
+            <el-form-item label="搜索范围">
+              <input type="file" id="search_range" hidden @change="searchFileRange" webkitdirectory>
+              <el-input placeholder="搜索范围" v-model="form.searchFilePath" class="input-with-select">
+                <el-button slot="append" icon="el-icon-folder" type="success" @click="onSearchRange"></el-button>
               </el-input>
             </el-form-item>
-          </el-form>
 
-          <el-form ref="form" :model="form" label-width="120px" style="width: 60%">
+            <el-form-item label="原文件">
+              <input type="file" id="move_file" accept="image/png, image/jpeg, image/jpg" multiple="multiple" hidden @change="maskFile">
+              <el-input placeholder="移动的文件"  v-model="form.moveFileList" class="input-with-select">
+                <el-button slot="append"  icon="el-icon-folder" type="success" @click="onMoveFile"></el-button>
+              </el-input>
+            </el-form-item>
+
             <el-form-item label="目标文件夹">
               <input type="file" id="target_file" hidden @change="fileChange" webkitdirectory>
-              <el-input placeholder="目标文件夹" v-model="filePath" class="input-with-select">
-                <el-button slot="append" icon="el-icon-folder" type="success" @click="btnChange"></el-button>
+              <el-input placeholder="目标文件夹" v-model="form.filePath" class="input-with-select">
+                <el-button slot="append" icon="el-icon-folder" type="success" @click="onTargetFile"></el-button>
               </el-input>
             </el-form-item>
           </el-form>
-          <el-button type="primary" @click="testCmd" plain>运行全部</el-button>
+          <el-button type="primary" @click="runMoveAllFile" plain>运行全部</el-button>
         </el-main>
       </el-container>
     </el-card>
@@ -49,37 +54,36 @@ export default {
 
   data () {
     return {
-      moveFileList: '',
-      filePath: '',
+      form: {
+        moveFileList: [],
+        filePath: '',
+        searchFilePath: ''
+      },
       colConfigs: [
         { prop: 'id', label: '序号' },
-        { prop: 'more_file', label: '移动文件' },
+        { prop: 'move_file', label: '移动文件' },
         { prop: 'target_address', label: '目标地址' },
         { prop: 'status', label: '状态' },
         { slot: 'options', message: 'message' }
       ],
-      tableData: [{
-        id: '1',
-        more_file: '2016-05-02',
-        target_address: '王小虎',
-        status: false
-      }, {
-        id: '2',
-        more_file: '2016-05-04',
-        target_address: '王小虎',
-        status: false
-      }]
+      tableData: []
     }
   },
 
   methods: {
     fileChange (e) {
       try {
-        const fu = document.getElementById('file')
+        const fu = document.getElementById('target_file')
         if (fu == null) return
         const that = this
-        that.filePath = fu.files[0].path
-        console.log('fileChange:', that.filePath)
+        let tbl = that.tableData
+        let target = fu.files[0].path
+        for (let i = 0; i < tbl.length; i++) {
+          tbl[i].target_address = target
+        }
+        that.form.filePath = target
+        that.tableData = tbl
+        console.log('fileChange:', that.form.filePath)
       } catch (error) {
         console.debug('choice file err:', error)
       }
@@ -87,37 +91,113 @@ export default {
 
     maskFile () {
       try {
-        const fileObj = document.getElementById('file')
+        const fileObj = document.getElementById('move_file')
         if (fileObj == null) return
         const that = this
-        that.moveFileList = fileObj.files
-        console.log('mask file:', fileObj.files)
+        const files = fileObj.files
+        that.form.moveFileList = files[0].path
+        let tbl = that.tableData
+        for (let i = 0; i < files.length; i++) {
+          let file = files[i]
+          tbl[tbl.length] = {
+            id: tbl.length,
+            move_file: file.path,
+            target_address: that.form.filePath,
+            status: '未运行'
+          }
+        }
+        that.tableData = JSON.parse(JSON.stringify(tbl))
+        console.log('mask file2', tbl)
       } catch (error) {
         console.debug('choice file err:', error)
       }
     },
 
-    btnChange () {
-      const file = document.getElementById('file')
+    searchFileRange () {
+      try {
+        const fileObj = document.getElementById('search_range')
+        if (fileObj == null) return
+        const that = this
+        console.log('search file:', fileObj.files[0].path)
+        that.form.searchFilePath = fileObj.files[0].path
+        // that.setSearchRange()
+      } catch (error) {
+        console.debug('choice file err:', error)
+      }
+    },
+
+    clickFile (file) {
       file.click()
     },
 
-    testCmd: function () {
+    onMoveFile () {
+      const file = document.getElementById('move_file')
       const that = this
-      const filePath = that.form.filePath
-      console.log('file path', filePath)
+      console.log('onclick file btn', file)
+      that.clickFile(file)
+    },
+
+    onTargetFile () {
+      const file = document.getElementById('target_file')
+      const that = this
+      that.clickFile(file)
+    },
+
+    onSearchRange () {
+      const file = document.getElementById('search_range')
+      const that = this
+      that.clickFile(file)
+    },
+
+    getSearchRangeOrder () {
+      const that = this
+      const filePath = that.form.searchFilePath
+      console.log('searchFilePath', filePath)
+      if (filePath.length <= 0) {
+        this.$message.error('未设置搜索范围')
+        return
+      }
       const pythonPath = '.\\src\\renderer\\plugins\\python\\res_arrange.py'
       const command = 'python ' + pythonPath + ' ' + filePath
+      // that.testCmd(command)
+      return command
+    },
+
+    runMoveAllFile: function () {
+      const that = this
+      const tbl = that.tableData
+      let runOrder = ''
+      let searchOrder = that.getSearchRangeOrder()
+      for (let i = 0; i < tbl.length; i++) {
+        let moveFile = tbl[i].move_file
+        let targetPath = tbl[i].target_address
+        let moveOrder = ' mv ' + moveFile + ' ' + targetPath
+        runOrder = searchOrder + moveOrder
+        console.log('-----run move------', runOrder)
+        that.testCmd(runOrder)
+      }
+    },
+
+    testCmd: function (command, id) {
+      const that = this
+      console.log('----- cmd order -----', command)
       that.$cmd.get(
         command,
         function (err, data, stderr) {
-          console.log(stderr)
+          console.log('----- cmd err -----', stderr)
+          console.log('----- err mask -----', err)
+          const h = that.$createElement;
+          that.$notify({
+            title: '提示',
+            // eslint-disable-next-line standard/object-curly-even-spacing
+            message: h('i', { style: 'color: teal'}, stderr)
+          })
           if (!err) {
             that.$message({
               message: '运行成功',
               type: 'success'
             })
-            console.log('the node-cmd cloned dir contains these files :', data)
+            console.log('the node-cmd log :', data)
           } else {
             console.log('error', err)
             this.$message.error('运行出错了')

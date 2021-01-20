@@ -373,35 +373,15 @@ if __name__ == '__main__':
     if len(sys.argv) < 3 or sys.argv[2] != 'no_idx':
         mk_idx(dpath)
 
+    fileOrder = sys.argv[3]
+    order = sys.argv[2]
+    cmd = sys.argv[2] + ' ' + sys.argv[3] + ' ' + sys.argv[4]
     pt = re.compile('mv ([^ ]*) ([^ ]*)')
-    while True:
-        cmd = raw_input().lower()
-        if cmd == 'exit':
-            break
-
-        if cmd.startswith('mkdir '):
-            os.system(cmd)
-            continue
-
-        if cmd.startswith('pr '):
-            path = cmd[3:].strip()
-            if path != '':
-                print_ref(os.path.abspath(path))
-                
-            continue
-        
-        if cmd.startswith('ck '):
-            path = cmd[3:].strip()
-            if path != '':
-                check_ref(os.path.abspath(path))
-
-            continue
-
-
-        m = pt.search(cmd)
-        if not m:
-            continue
-
+    m = pt.search(cmd)
+    print('cmd is:', cmd, order)
+    if not m:
+        print('m is null')
+    if m:
         p1 = m.group(1)
         p2 = m.group(2)
 
